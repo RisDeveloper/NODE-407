@@ -5,7 +5,7 @@
 
 define('DB_HOST', getenv('DB_HOST') ?: 'aws-0-us-west-1.pooler.supabase.com');
 define('DB_PORT', getenv('DB_PORT') ?: '5432');
-define('DB_USER', getenv('DB_USER') ?: 'postgres');
+define('DB_USER', getenv('DB_USER') ?: 'postgres.lvveteqoidlcnmvuoupa');
 define('DB_PASS', getenv('DB_PASS') ?: '@Faris111029H');
 define('DB_NAME', getenv('DB_NAME') ?: 'postgres');
 
@@ -37,7 +37,7 @@ function getDB() {
             $dsn = "pgsql:host=" . $dbHost . 
                    ";port=" . DB_PORT . 
                    ";dbname=" . DB_NAME . 
-                   ";sslmode=require;connect_timeout=10";
+                   ";sslmode=require;connect_timeout=10;options='--client_encoding=UTF8'";
 
             $options = [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
