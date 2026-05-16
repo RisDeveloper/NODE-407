@@ -291,7 +291,7 @@ function showTypingIndicator() {
     </div>
     <div class="message-body">
       <div class="message-content">
-        <div class="loading-dots"><span></span><span></span><span></span></div>
+        <div class="typing-loader"><span></span><span></span><span></span></div>
       </div>
     </div>
   `;
