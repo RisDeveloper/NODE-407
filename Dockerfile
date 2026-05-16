@@ -14,4 +14,6 @@ ENV APP_URL=https://node407.railway.app
 
 EXPOSE 80
 
-CMD php-fpm -D && nginx -g "daemon off;"
+CMD sed -i "s/listen 80/listen ${PORT:-80}/g" /etc/nginx/http.d/default.conf && \
+    php-fpm -D && \
+    nginx -g "daemon off;"
