@@ -193,10 +193,18 @@ async function sendMessage() {
   const content = input.value.trim();
   if (!content) return;
 
+  isLoading = true;
+  document.getElementById('send-btn').disabled = true;
+
   // Create session if not exists
   if (!currentSession) {
     const res = await apiCall('chat.php', { action: 'new_session', model: currentModel });
-    if (!res.success) { showToast(res.message, 'error'); return; }
+    if (!res.success) {
+      isLoading = false;
+      document.getElementById('send-btn').disabled = false;
+      showToast(res.message, 'error');
+      return;
+    }
     currentSession = { id: res.session_id, title: 'Chat Baru', model_key: currentModel };
     await loadSessions();
   }
@@ -207,9 +215,6 @@ async function sendMessage() {
 
   appendMessage('user', content);
   showTypingIndicator();
-
-  isLoading = true;
-  document.getElementById('send-btn').disabled = true;
 
   const res = await apiCall('chat.php', {
     action: 'send_message',
