@@ -3,9 +3,9 @@
 // KONFIGURASI DATABASE SUPABASE (Direct Connection)
 // ============================================
 
-define('DB_HOST', getenv('DB_HOST') ?: 'aws-0-us-west-1.pooler.supabase.com');
+define('DB_HOST', getenv('DB_HOST') ?: 'db.lvveteqoidlcnmvuoupa.supabase.co');
 define('DB_PORT', getenv('DB_PORT') ?: '5432');
-define('DB_USER', getenv('DB_USER') ?: 'postgres.lvveteqoidlcnmvuoupa');
+define('DB_USER', getenv('DB_USER') ?: 'postgres');
 define('DB_PASS', getenv('DB_PASS') ?: '@Faris111029H');
 define('DB_NAME', getenv('DB_NAME') ?: 'postgres');
 
@@ -30,14 +30,18 @@ function getDB() {
                    ";dbname=" . DB_NAME . 
                    ";sslmode=require;connect_timeout=10";
 
-            // Force IPv4 - get A record
-            $records = @dns_get_record(DB_HOST, DNS_A);
-            $dbHost = ($records && isset($records[0]['ip'])) ? $records[0]['ip'] : DB_HOST;
+            // Use pooler (IPv4) in production, direct (IPv6) in dev
+            $poolerHost = 'aws-0-us-west-1.pooler.supabase.com';
+            $poolerUser = 'postgres.lvveteqoidlcnmvuoupa';
+            $usePooler = getenv('DB_POOLER') === 'true';
+            
+            $dbHost = $usePooler ? $poolerHost : DB_HOST;
+            $dbUser = $usePooler ? $poolerUser : DB_USER;
             
             $dsn = "pgsql:host=" . $dbHost . 
                    ";port=" . DB_PORT . 
                    ";dbname=" . DB_NAME . 
-                   ";sslmode=require;connect_timeout=10;options='--client_encoding=UTF8'";
+                   ";sslmode=require;connect_timeout=10";
 
             $options = [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -45,7 +49,7 @@ function getDB() {
                 PDO::ATTR_EMULATE_PREPARES => false,
             ];
 
-            $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
+            $pdo = new PDO($dsn, $dbUser, DB_PASS, $options);
         } catch (PDOException $e) {
             error_log("DB Connection Error: " . $e->getMessage());
             die(json_encode([
