@@ -111,7 +111,13 @@ function renderMarkdown(text) {
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     // Code blocks
     .replace(/```(\w+)?\n?([\s\S]*?)```/g, (_, lang, code) =>
-      `<pre><code class="language-${lang || 'text'}">${code.trim()}</code></pre>`)
+      `<div class="code-block-wrapper">
+        <div class="code-block-header">
+          <span class="code-lang">${lang || 'code'}</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code class="language-${lang || 'text'}">${code.trim()}</code></pre>
+      </div>`)
     // Inline code
     .replace(/`([^`]+)`/g, '<code>$1</code>')
     // Bold
@@ -128,6 +134,17 @@ function renderMarkdown(text) {
     // Line breaks
     .replace(/\n\n/g, '</p><p>')
     .replace(/\n/g, '<br>');
+}
+
+function copyCode(btn) {
+  const code = btn.closest('.code-block-wrapper').querySelector('code').textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+  }).catch(() => {
+    btn.textContent = 'Failed';
+    setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+  });
 }
 
 // ============================================
