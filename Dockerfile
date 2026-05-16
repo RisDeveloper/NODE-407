@@ -5,7 +5,7 @@ RUN apk add --no-cache postgresql-dev nginx && docker-php-ext-install pdo_pgsql
 COPY . /var/www/html/
 COPY nginx.conf /etc/nginx/http.d/default.conf
 
-ENV DB_HOST=db.lvveteqoidlcnmvuoupa.supabase.co
+ENV DB_HOST=aws-0-us-west-1.pooler.supabase.com
 ENV DB_PORT=5432
 ENV DB_USER=postgres
 ENV DB_PASS=@Faris111029H

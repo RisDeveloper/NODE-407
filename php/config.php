@@ -3,7 +3,7 @@
 // KONFIGURASI DATABASE SUPABASE (Direct Connection)
 // ============================================
 
-define('DB_HOST', getenv('DB_HOST') ?: 'db.lvveteqoidlcnmvuoupa.supabase.co');
+define('DB_HOST', getenv('DB_HOST') ?: 'aws-0-us-west-1.pooler.supabase.com');
 define('DB_PORT', getenv('DB_PORT') ?: '5432');
 define('DB_USER', getenv('DB_USER') ?: 'postgres');
 define('DB_PASS', getenv('DB_PASS') ?: '@Faris111029H');
@@ -31,8 +31,8 @@ function getDB() {
                    ";sslmode=require;connect_timeout=10";
 
             // Force IPv4 - get A record
-            $records = dns_get_record(DB_HOST, DNS_A);
-            $dbHost = (!empty($records) && isset($records[0]['ip'])) ? $records[0]['ip'] : DB_HOST;
+            $records = @dns_get_record(DB_HOST, DNS_A);
+            $dbHost = ($records && isset($records[0]['ip'])) ? $records[0]['ip'] : DB_HOST;
             
             $dsn = "pgsql:host=" . $dbHost . 
                    ";port=" . DB_PORT . 
