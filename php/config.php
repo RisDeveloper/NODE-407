@@ -36,9 +36,9 @@ function getDB() {
             $dbPort = DB_PORT;
             
             if (getenv('DB_POOLER') === 'true') {
-                $dbHost = 'aws-0-us-west-1.pooler.supabase.com';
+                $dbHost = 'aws-1-ap-northeast-1.pooler.supabase.com';
                 $dbUser = 'postgres.lvveteqoidlcnmvuoupa';
-                $dbPort = '6543';
+                $dbPort = '5432';
             }
             
             $dsn = "pgsql:host=" . $dbHost . 
