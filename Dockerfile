@@ -2,9 +2,11 @@ FROM php:8.2-apache
 
 RUN apt-get update && apt-get install -y libpq-dev && docker-php-ext-install pdo_pgsql
 
-# Fix MPM conflict
-RUN a2dismod --force mpm_event mpm_worker 2>/dev/null; \
-    a2enmod mpm_prefork rewrite; \
+# Force only mpm_prefork
+RUN rm -f /etc/apache2/mods-enabled/mpm*.load /etc/apache2/mods-enabled/mpm*.conf && \
+    ln -s /etc/apache2/mods-available/mpm_prefork.load /etc/apache2/mods-enabled/ && \
+    ln -s /etc/apache2/mods-available/mpm_prefork.conf /etc/apache2/mods-enabled/ && \
+    a2enmod rewrite && \
     echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
 COPY . /var/www/html/
