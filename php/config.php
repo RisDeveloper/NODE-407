@@ -30,20 +30,21 @@ function getDB() {
                    ";dbname=" . DB_NAME . 
                    ";sslmode=require;connect_timeout=10";
 
-            // Use pooler (IPv4) in production, direct (IPv6) in dev
-            $poolerHost = 'aws-0-us-west-1.pooler.supabase.com';
-            $poolerUser = 'postgres.lvveteqoidlcnmvuoupa';
-            $usePooler = getenv('DB_POOLER') === 'true';
+            // Try direct first, fallback to pooler
+            $dbHost = DB_HOST;
+            $dbUser = DB_USER;
+            $dbPort = DB_PORT;
             
-            $dbHost = $usePooler ? $poolerHost : DB_HOST;
-            $dbUser = $usePooler ? $poolerUser : DB_USER;
-            $dbPort = $usePooler ? '6543' : DB_PORT;
+            if (getenv('DB_POOLER') === 'true') {
+                $dbHost = 'aws-0-us-west-1.pooler.supabase.com';
+                $dbUser = 'postgres.lvveteqoidlcnmvuoupa';
+                $dbPort = '6543';
+            }
             
             $dsn = "pgsql:host=" . $dbHost . 
                    ";port=" . $dbPort . 
                    ";dbname=" . DB_NAME . 
-                   ";sslmode=require;connect_timeout=10" .
-                   ($usePooler ? ";options='--pgbouncer=true'" : "");
+                   ";sslmode=require;connect_timeout=10";
 
             $options = [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
