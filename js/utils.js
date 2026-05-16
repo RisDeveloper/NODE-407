@@ -107,30 +107,72 @@ function formatDateTime(dateStr) {
 // MARKDOWN → HTML (simple)
 // ============================================
 function renderMarkdown(text) {
-  return text
+  // Extract code blocks first (preserve original text)
+  const blocks = [];
+  text = text.replace(/```(\w+)?\n?([\s\S]*?)```/g, (_, lang, code) => {
+    const idx = blocks.length;
+    blocks.push({ lang: lang || 'code', code: code.trim() });
+    return `\x00CODEBLOCK${idx}\x00`;
+  });
+  // HTML escape (code blocks excluded)
+  text = text
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    // Code blocks
-    .replace(/```(\w+)?\n?([\s\S]*?)```/g, (_, lang, code) =>
-      `<div class="code-block">
-        <div class="code-actions">
-          <span class="code-lang">${lang || 'code'}</span>
-          <div class="code-btns">
-            <button class="code-btn" onclick="copyCode(this)" title="Salin kode">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-            </button>
-          </div>
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/~{2}(.+?)~{2}/g, '<del>$1</del>')
+    .replace(/^### (.+)$/gm, '<h4>$1</h4>')
+    .replace(/^## (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^# (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^- (.+)$/gm, '<li>$1</li>')
+    .replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>')
+    .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
+    .replace(/^---$/gm, '<hr>')
+    .replace(/\n/g, '<br>');
+  // Restore code blocks (safe: HTML already escaped)
+  text = text.replace(/\x00CODEBLOCK(\d+)\x00/g, (_, idx) => {
+    const b = blocks[+idx];
+    return `<div class="code-block">
+      <div class="code-actions">
+        <span class="code-lang">${b.lang}</span>
+        <div class="code-btns">
+          <button class="code-btn" onclick="copyCode(this)" title="Salin kode" data-code="${encodeURIComponent(b.code)}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+          <button class="code-btn" onclick="downloadCode(this)" title="Download">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </button>
         </div>
-        <pre><code class="language-${lang || 'text'}">${code.trim()}</code></pre>
-      </div>`)
+      </div>
+      <pre><code class="language-${b.lang}">${b.code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>
+    </div>`;
+  });
+  return text;
+}
 
+// Code block copy
 function copyCode(btn) {
-  const code = btn.closest('.code-block').querySelector('code').textContent;
+  const code = decodeURIComponent(btn.dataset.code);
   const svg = btn.innerHTML;
   navigator.clipboard.writeText(code).then(() => {
     btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
     setTimeout(() => { btn.innerHTML = svg; }, 2000);
   });
 }
+
+// Code block download
+function downloadCode(btn) {
+  const block = btn.closest('.code-block');
+  const code = decodeURIComponent(block.querySelector('[data-code]').dataset.code);
+  const lang = block.querySelector('.code-lang').textContent;
+  const blob = new Blob([code], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  const ext = lang === 'code' ? 'txt' : lang;
+  a.download = `code.${ext}`;
+  a.click();
+  URL.revokeObjectURL(a.href);
 }
 
 // ============================================
