@@ -199,52 +199,60 @@ img.avatar { object-fit: cover; border-radius: 50%; }
   }
 }
 
-/* Code block with copy button */
-.code-block-wrapper {
+/* Code block - Gemini style */
+.code-block {
   margin: 8px 0;
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
-  border: 1px solid var(--border);
-  background: #1e1e1e;
+  background: #0d1117;
+  border: 1px solid #30363d;
 }
-.code-block-header {
+.code-actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 10px;
-  background: #2d2d2d;
-  border-bottom: 1px solid #3d3d3d;
+  padding: 8px 16px;
+  background: #161b22;
+  border-bottom: 1px solid #30363d;
 }
 .code-lang {
-  font-size: .68rem;
-  color: #888;
+  font-size: .75rem;
+  color: #8b949e;
   font-weight: 500;
-  text-transform: uppercase;
 }
-.copy-btn {
+.code-btns {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.code-btn {
   background: none;
   border: none;
-  color: #999;
-  font-size: .82rem;
-  padding: 0;
+  color: #8b949e;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
   cursor: pointer;
-  line-height: 1;
-  transition: .2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: .15s;
 }
-.copy-btn:hover {
-  color: #fff;
-  transform: scale(1.15);
+.code-btn:hover {
+  background: #30363d;
+  color: #e6edf3;
 }
-.code-block-wrapper pre {
+.code-block pre {
   margin: 0;
-  padding: 12px;
+  padding: 16px;
   overflow-x: auto;
+  background: #0d1117;
 }
-.code-block-wrapper code {
-  font-family: 'Fira Code', monospace;
+.code-block code {
+  font-family: 'Fira Code', 'Consolas', monospace;
   font-size: .82rem;
-  line-height: 1.5;
-  color: #d4d4d4;
+  line-height: 1.55;
+  color: #e6edf3;
 }
 
 /* ============ MODAL ============ */

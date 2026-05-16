@@ -111,40 +111,26 @@ function renderMarkdown(text) {
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     // Code blocks
     .replace(/```(\w+)?\n?([\s\S]*?)```/g, (_, lang, code) =>
-      `<div class="code-block-wrapper">
-        <div class="code-block-header">
+      `<div class="code-block">
+        <div class="code-actions">
           <span class="code-lang">${lang || 'code'}</span>
-          <button class="copy-btn" onclick="copyCode(this)" title="Copy">📋</button>
+          <div class="code-btns">
+            <button class="code-btn" onclick="copyCode(this)" title="Salin kode">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </button>
+          </div>
         </div>
         <pre><code class="language-${lang || 'text'}">${code.trim()}</code></pre>
       </div>`)
-    // Inline code
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-    // Bold
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    // Italic
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    // Headers
-    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-    // Lists
-    .replace(/^[-*] (.+)$/gm, '<li>$1</li>')
-    .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
-    // Line breaks
-    .replace(/\n\n/g, '</p><p>')
-    .replace(/\n/g, '<br>');
-}
 
 function copyCode(btn) {
-  const code = btn.closest('.code-block-wrapper').querySelector('code').textContent;
+  const code = btn.closest('.code-block').querySelector('code').textContent;
+  const svg = btn.innerHTML;
   navigator.clipboard.writeText(code).then(() => {
-    btn.textContent = '✅';
-    setTimeout(() => { btn.textContent = '📋'; }, 2000);
-  }).catch(() => {
-    btn.textContent = '❌';
-    setTimeout(() => { btn.textContent = '📋'; }, 2000);
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+    setTimeout(() => { btn.innerHTML = svg; }, 2000);
   });
+}
 }
 
 // ============================================
