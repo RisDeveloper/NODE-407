@@ -37,11 +37,13 @@ function getDB() {
             
             $dbHost = $usePooler ? $poolerHost : DB_HOST;
             $dbUser = $usePooler ? $poolerUser : DB_USER;
+            $dbPort = $usePooler ? '6543' : DB_PORT;
             
             $dsn = "pgsql:host=" . $dbHost . 
-                   ";port=" . DB_PORT . 
+                   ";port=" . $dbPort . 
                    ";dbname=" . DB_NAME . 
-                   ";sslmode=require;connect_timeout=10";
+                   ";sslmode=require;connect_timeout=10" .
+                   ($usePooler ? ";options='--pgbouncer=true'" : "");
 
             $options = [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
