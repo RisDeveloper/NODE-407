@@ -1,9 +1,6 @@
 FROM php:8.2-fpm-alpine
 
-RUN docker-php-ext-install pdo_pgsql
-
-# Install nginx
-RUN apk add --no-cache nginx
+RUN apk add --no-cache postgresql-dev nginx && docker-php-ext-install pdo_pgsql
 
 COPY . /var/www/html/
 COPY nginx.conf /etc/nginx/http.d/default.conf
