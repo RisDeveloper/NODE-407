@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel – NODE-407</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <!-- Chart.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+</head>
+<body>
+
+<div class="admin-layout">
+
+  <!-- ========== SIDEBAR ADMIN ========== -->
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar-header">
+      <div class="admin-logo">
+        <img src="img/logonode.png" alt="NODE-407" class="admin-logo-img">
+        <div>
+          <div class="admin-logo-text">NODE-407</div>
+          <span class="admin-badge">ADMIN</span>
+        </div>
+      </div>
+    </div>
+
+    <nav class="admin-nav">
+      <div class="admin-nav-section">Menu Utama</div>
+
+      <button class="admin-nav-item active" data-page="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+        </svg>
+        Dashboard
+      </button>
+
+      <button class="admin-nav-item" data-page="users">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        Manajemen User
+      </button>
+
+      <div class="admin-nav-section">Pengaturan</div>
+
+      <button class="admin-nav-item" data-page="ai_settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+        </svg>
+        Pengaturan AI
+      </button>
+
+      <button class="admin-nav-item" data-page="global_settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+        Pengaturan Global
+      </button>
+
+      <div class="admin-nav-section">Laporan</div>
+
+      <button class="admin-nav-item" data-page="audit_log">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+          <polyline points="10 9 9 9 8 9"/>
+        </svg>
+        Audit Log
+      </button>
+
+    </nav>
+
+    <div class="admin-sidebar-footer">
+      <div class="admin-profile">
+        <div class="avatar avatar-sm" data-admin-avatar>A</div>
+        <div class="admin-profile-info">
+          <div class="name" id="admin-username">Admin</div>
+          <div class="role">Administrator</div>
+        </div>
+      </div>
+      <button class="admin-nav-item" style="margin-top:8px" onclick="logout()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Keluar
+      </button>
+    </div>
+  </aside>
+
+  <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="document.querySelector('.admin-layout').classList.remove('sidebar-open')"></div>
+
+  <!-- ========== MAIN CONTENT ========== -->
+  <div class="admin-main">
+
+    <!-- Top Bar -->
+    <div class="admin-topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="admin-sidebar-toggle" id="admin-sidebar-toggle" onclick="document.querySelector('.admin-layout').classList.toggle('sidebar-open')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <div class="admin-topbar-title" id="page-title">Dashboard</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <a href="chat.php" class="btn btn-outline btn-sm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          Buka Chat
+        </a>
+        <div class="avatar avatar-sm" data-admin-avatar>A</div>
+      </div>
+    </div>
+
+    <!-- Mobile Nav -->
+    <div class="admin-mobile-nav" id="admin-mobile-nav">
+      <button class="mobile-nav-item active" data-page="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span>Dashboard</span>
+      </button>
+      <button class="mobile-nav-item" data-page="users">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>Users</span>
+      </button>
+      <button class="mobile-nav-item" data-page="ai_settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+        <span>AI</span>
+      </button>
+      <button class="mobile-nav-item" data-page="global_settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>Global</span>
+      </button>
+      <button class="mobile-nav-item" data-page="audit_log">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <span>Log</span>
+      </button>
+    </div>
+
+    <div class="admin-content">
+
+      <!-- ==============================
+           PAGE: DASHBOARD
+           ============================== -->
+      <div class="admin-page active" id="page-dashboard">
+
+        <div class="stat-grid" style="margin-bottom:20px">
+          <div class="stat-card">
+            <div class="stat-icon red">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
+            <div>
+              <div class="stat-value" id="stat-total-users">0</div>
+              <div class="stat-label">Total User</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+            </div>
+            <div>
+              <div class="stat-value" id="stat-active-users">0</div>
+              <div class="stat-label">User Aktif</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon purple">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+            </div>
+            <div>
+              <div class="stat-value" id="stat-total-chats">0</div>
+              <div class="stat-label">Total Sesi Chat</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon orange">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+            </div>
+            <div>
+              <div class="stat-value" id="stat-total-msgs">0</div>
+              <div class="stat-label">Total Pesan</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon sky">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+            </div>
+            <div>
+              <div class="stat-value" id="stat-today-msgs">0</div>
+              <div class="stat-label">Pesan Hari Ini</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon pink">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <line x1="19" y1="8" x2="19" y2="14"/>
+                <line x1="22" y1="11" x2="16" y2="11"/>
+              </svg>
+            </div>
+            <div>
+              <div class="stat-value" id="stat-today-users">0</div>
+              <div class="stat-label">User Baru Hari Ini</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chart + Model Usage -->
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:20px">
+          <div class="chart-card">
+            <div class="card-header">
+              <span class="card-title">📈 Pesan 7 Hari Terakhir</span>
+            </div>
+            <div class="chart-wrap" style="height:220px">
+              <canvas id="msgChart"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="card-header">
+              <span class="card-title">🤖 Penggunaan Model</span>
+            </div>
+            <div id="model-usage-list" style="padding-top:8px">
+              <div class="spinner" style="margin:20px auto"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Users -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">👥 Top 5 User Paling Aktif</span>
+            <button class="btn btn-outline btn-sm" onclick="navigateTo('users')">Lihat Semua</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Penggunaan Pesan</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="top-users-tbody">
+                <tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:20px">Memuat...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ==============================
+           PAGE: USERS
+           ============================== -->
+      <div class="admin-page" id="page-users">
+
+        <div class="card" style="margin-bottom:16px">
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <div class="input-icon-wrap" style="flex:1;min-width:200px">
+              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input type="text" id="user-search" class="form-control" placeholder="Cari user..." style="padding-left:38px"
+                oninput="loadUsers(this.value, document.getElementById('user-status-filter').value)">
+            </div>
+            <select id="user-status-filter" class="form-control" style="width:auto"
+              onchange="loadUsers(document.getElementById('user-search').value, this.value)">
+              <option value="">Semua Status</option>
+              <option value="active">Aktif</option>
+              <option value="suspended">Suspended</option>
+              <option value="banned">Banned</option>
+            </select>
+            <button class="btn btn-primary" onclick="loadUsers()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+                <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.36"/>
+              </svg>
+              Refresh
+            </button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Pesan</th>
+                <th>Sesi</th>
+                <th class="hide-mobile">Bergabung</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="users-tbody">
+              <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:24px">
+                <div class="spinner" style="margin:0 auto 8px"></div>Memuat data user...
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+      <!-- ==============================
+           PAGE: AI SETTINGS
+           ============================== -->
+      <div class="admin-page" id="page-ai_settings">
+        <div style="margin-bottom:16px">
+          <h3 style="font-size:1rem;font-weight:700">Konfigurasi Model AI</h3>
+          <p class="text-muted text-sm mt-1">Kelola API Key, system prompt, dan parameter setiap model AI.</p>
+        </div>
+        <div id="ai-models-container">
+          <div style="text-align:center;padding:40px;color:var(--text-muted)">
+            <div class="spinner" style="margin:0 auto 12px"></div>Memuat pengaturan AI...
+          </div>
+        </div>
+      </div>
+
+      <!-- ==============================
+           PAGE: GLOBAL SETTINGS
+           ============================== -->
+      <div class="admin-page" id="page-global_settings">
+        <div style="margin-bottom:16px">
+          <h3 style="font-size:1rem;font-weight:700">Pengaturan Global Aplikasi</h3>
+          <p class="text-muted text-sm mt-1">Konfigurasi umum yang mempengaruhi seluruh aplikasi.</p>
+        </div>
+        <div id="global-settings-container">
+          <div style="text-align:center;padding:40px;color:var(--text-muted)">
+            <div class="spinner" style="margin:0 auto 12px"></div>Memuat pengaturan...
+          </div>
+        </div>
+      </div>
+
+      <!-- ==============================
+           PAGE: AUDIT LOG
+           ============================== -->
+      <div class="admin-page" id="page-audit_log">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+          <div>
+            <h3 style="font-size:1rem;font-weight:700">Audit Log</h3>
+            <p class="text-muted text-sm mt-1">Riwayat semua aktivitas di sistem.</p>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="loadAuditLog()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.36"/>
+            </svg>
+            Refresh
+          </button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Waktu</th>
+                <th>User</th>
+                <th>Aksi</th>
+                <th>Detail</th>
+                <th class="hide-mobile">IP Address</th>
+              </tr>
+            </thead>
+            <tbody id="audit-tbody">
+              <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px">
+                <div class="spinner" style="margin:0 auto 8px"></div>Memuat log...
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /admin-content -->
+  </div><!-- /admin-main -->
+</div><!-- /admin-layout -->
+
+
+<!-- ========== MODAL: USER DETAIL ========== -->
+<div class="modal-overlay" id="modal-user-detail">
+  <div class="modal" style="max-width:700px">
+    <div class="modal-header">
+      <span class="modal-title">👤 Detail User</span>
+      <button class="btn-icon" onclick="closeModal('modal-user-detail')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div id="user-detail-content"></div>
+  </div>
+</div>
+
+<!-- ========== MODAL: EDIT USER ========== -->
+<div class="modal-overlay" id="modal-edit-user">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <span class="modal-title">✏️ Edit User</span>
+      <button class="btn-icon" onclick="closeModal('modal-edit-user')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <input type="hidden" id="edit-user-id">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="form-group">
+        <label>Nama Lengkap</label>
+        <input type="text" id="edit-fullname" class="form-control">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="text" id="edit-email" class="form-control" readonly style="background:var(--bg-sidebar)">
+      </div>
+      <div class="form-group">
+        <label>No. HP</label>
+        <input type="text" id="edit-phone" class="form-control">
+      </div>
+      <div class="form-group">
+        <label>Status Akun</label>
+        <select id="edit-status" class="form-control">
+          <option value="active">Aktif</option>
+          <option value="suspended">Suspended</option>
+          <option value="banned">Banned</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Limit Pesan</label>
+        <input type="number" id="edit-limit" class="form-control" min="0" max="999999">
+      </div>
+      <div style="display:flex;gap:10px;margin-top:4px">
+        <button class="btn btn-primary" id="save-edit-btn" onclick="saveEditUser()">Simpan</button>
+        <button class="btn btn-outline" onclick="closeModal('modal-edit-user')">Batal</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== MODAL: SET LIMIT ========== -->
+<div class="modal-overlay" id="modal-set-limit">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header">
+      <span class="modal-title">⚡ Set Limit Pesan</span>
+      <button class="btn-icon" onclick="closeModal('modal-set-limit')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <input type="hidden" id="limit-user-id">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="form-group">
+        <label>Jumlah Limit Pesan</label>
+        <input type="number" id="limit-value" class="form-control" min="0" max="999999" placeholder="contoh: 500">
+      </div>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:.875rem;font-weight:600">
+        <input type="checkbox" id="reset-usage" style="width:16px;height:16px;accent-color:var(--primary)">
+        Reset penggunaan pesan ke 0
+      </label>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-primary" onclick="saveLimit()">Simpan</button>
+        <button class="btn btn-outline" onclick="closeModal('modal-set-limit')">Batal</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+
+<script src="js/utils.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>
