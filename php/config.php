@@ -30,14 +30,14 @@ function getDB() {
                    ";dbname=" . DB_NAME . 
                    ";sslmode=require;connect_timeout=10";
 
-            // Force IPv4 if available
-            $ip = gethostbyname(DB_HOST);
-            if ($ip !== DB_HOST) {
-                $dsn = "pgsql:host=" . $ip . 
-                       ";port=" . DB_PORT . 
-                       ";dbname=" . DB_NAME . 
-                       ";sslmode=require;connect_timeout=10";
-            }
+            // Force IPv4 - get A record
+            $records = dns_get_record(DB_HOST, DNS_A);
+            $dbHost = (!empty($records) && isset($records[0]['ip'])) ? $records[0]['ip'] : DB_HOST;
+            
+            $dsn = "pgsql:host=" . $dbHost . 
+                   ";port=" . DB_PORT . 
+                   ";dbname=" . DB_NAME . 
+                   ";sslmode=require;connect_timeout=10";
 
             $options = [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
