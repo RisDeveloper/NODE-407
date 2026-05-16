@@ -114,7 +114,7 @@ function renderMarkdown(text) {
       `<div class="code-block-wrapper">
         <div class="code-block-header">
           <span class="code-lang">${lang || 'code'}</span>
-          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <button class="copy-btn" onclick="copyCode(this)" title="Copy">📋</button>
         </div>
         <pre><code class="language-${lang || 'text'}">${code.trim()}</code></pre>
       </div>`)
@@ -139,11 +139,11 @@ function renderMarkdown(text) {
 function copyCode(btn) {
   const code = btn.closest('.code-block-wrapper').querySelector('code').textContent;
   navigator.clipboard.writeText(code).then(() => {
-    btn.textContent = 'Copied!';
-    setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+    btn.textContent = '✅';
+    setTimeout(() => { btn.textContent = '📋'; }, 2000);
   }).catch(() => {
-    btn.textContent = 'Failed';
-    setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+    btn.textContent = '❌';
+    setTimeout(() => { btn.textContent = '📋'; }, 2000);
   });
 }
 
