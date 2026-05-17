@@ -214,7 +214,12 @@ async function sendMessage() {
   document.getElementById('chat-empty').style.display = 'none';
 
   appendMessage('user', content);
-  const typingEl = showTypingIndicator();
+
+  // Langsung tampilkan kotak respons (gak nunggu first chunk)
+  const msgEl = appendMessage('assistant', '', null, false);
+  const contentDiv = msgEl.querySelector('.message-content');
+  contentDiv.innerHTML = '<div class="stream-waiting"><span class="stream-dot"></span><span class="stream-dot"></span><span class="stream-dot"></span></div>';
+  scrollToBottom();
 
   // Streaming fetch
   const fd = new FormData();
@@ -228,14 +233,11 @@ async function sendMessage() {
     if (!response.ok) throw new Error('HTTP ' + response.status);
     if (!response.body) throw new Error('Streaming tidak didukung browser.');
 
-    hideTypingIndicator();
-    const msgEl = appendMessage('assistant', '', null, false);
-    const contentDiv = msgEl.querySelector('.message-content');
-
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
     let fullText = '';
+    let started = false;
 
     while (true) {
       const { done, value } = await reader.read();
@@ -248,6 +250,10 @@ async function sendMessage() {
         try {
           const data = JSON.parse(line);
           if (data.type === 'chunk') {
+            if (!started) {
+              started = true;
+              contentDiv.innerHTML = '';
+            }
             fullText += data.text;
             contentDiv.innerHTML = renderMarkdown(fullText) + '<span class="stream-cursor">|</span>';
             scrollToBottom();
@@ -265,7 +271,7 @@ async function sendMessage() {
       }
     }
   } catch (err) {
-    hideTypingIndicator();
+    contentDiv.innerHTML = `<p class="text-error">Gagal terhubung: ${err.message}</p>`;
     showToast('Gagal terhubung ke server: ' + err.message, 'error');
   }
 

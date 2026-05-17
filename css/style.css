@@ -268,6 +268,27 @@ img.avatar { object-fit: cover; border-radius: 50%; }
 /* Error text */
 .text-error { color: #f87171; }
 
+/* Streaming waiting dots */
+.stream-waiting {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 12px 0;
+}
+.stream-dot {
+  width: 8px;
+  height: 8px;
+  background: #CC0000;
+  border-radius: 50%;
+  animation: streamPulse 1.4s ease-in-out infinite;
+}
+.stream-dot:nth-child(2) { animation-delay: .2s; }
+.stream-dot:nth-child(3) { animation-delay: .4s; }
+@keyframes streamPulse {
+  0%, 80%, 100% { transform: scale(.6); opacity: .4; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
 /* ============ MODAL ============ */
 .modal-overlay {
   position: fixed; inset: 0; background: rgba(0,0,0,.45); backdrop-filter: blur(4px);
