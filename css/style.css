@@ -255,6 +255,19 @@ img.avatar { object-fit: cover; border-radius: 50%; }
   color: #e6edf3;
 }
 
+/* Streaming cursor blink */
+.stream-cursor {
+  animation: blink 0.8s step-end infinite;
+  color: #CC0000;
+  font-weight: bold;
+}
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+/* Error text */
+.text-error { color: #f87171; }
+
 /* ============ MODAL ============ */
 .modal-overlay {
   position: fixed; inset: 0; background: rgba(0,0,0,.45); backdrop-filter: blur(4px);

@@ -23,6 +23,7 @@ switch ($action) {
     case 'rename_session':     renameSession(); break;
     case 'get_messages':       getMessages(); break;
     case 'send_message':       sendMessage(); break;
+    case 'send_message_stream': sendMessageStream(); break;
     case 'get_models':         getModels(); break;
     default:
         jsonResponse(['success' => false, 'message' => 'Aksi tidak valid.']);
@@ -370,8 +371,188 @@ if (strpos($modelKey, 'gemini') !== false) {
 }
 
 // ============================================
-// CURL HELPER
+// STREAMING AI RESPONSE
 // ============================================
+function sendMessageStream() {
+    $db = getDB();
+    $userId    = $_SESSION['user_id'] ?? 0;
+    $sessionId = (int)($_POST['session_id'] ?? 0);
+    $content   = trim($_POST['content'] ?? '');
+    $modelKey  = sanitize($_POST['model'] ?? 'llama-3.1-8b-instant');
+
+    if (empty($content)) { echo "{\"type\":\"error\",\"message\":\"Pesan tidak boleh kosong.\"}\n"; exit; }
+
+    $userStmt = $db->prepare("SELECT * FROM users WHERE id = ?");
+    $userStmt->execute([$userId]);
+    $user = $userStmt->fetch(PDO::FETCH_ASSOC);
+    if (!$user) { echo "{\"type\":\"error\",\"message\":\"User tidak valid.\"}\n"; exit; }
+    if ($user['messages_used'] >= $user['message_limit']) {
+        echo json_encode(['type'=>'error','message'=>'Batas pesan telah habis ('.$user['message_limit'].' pesan).'])."\n"; exit;
+    }
+
+    $sessStmt = $db->prepare("SELECT * FROM chat_sessions WHERE id = ? AND user_id = ?");
+    $sessStmt->execute([$sessionId, $userId]);
+    $session = $sessStmt->fetch(PDO::FETCH_ASSOC);
+    if (!$session) { echo "{\"type\":\"error\",\"message\":\"Sesi tidak valid.\"}\n"; exit; }
+
+    $modelStmt = $db->prepare("SELECT * FROM ai_settings WHERE model_key = ? AND (is_active = TRUE OR is_active = 'true')");
+    $modelStmt->execute([$modelKey]);
+    $modelSettings = $modelStmt->fetch(PDO::FETCH_ASSOC);
+    if (!$modelSettings) { echo json_encode(['type'=>'error','message'=>'Model AI tidak tersedia.'])."\n"; exit; }
+    if (empty($modelSettings['api_key'])) { echo json_encode(['type'=>'error','message'=>'API Key belum dikonfigurasi.'])."\n"; exit; }
+
+    $histStmt = $db->prepare("SELECT role, content FROM chat_messages WHERE session_id = ? ORDER BY created_at ASC LIMIT 20");
+    $histStmt->execute([$sessionId]);
+    $history = $histStmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Save user message
+    $insertStmt = $db->prepare("INSERT INTO chat_messages (session_id, user_id, role, content, model_key) VALUES (?, ?, 'user', ?, ?)");
+    $insertStmt->execute([$sessionId, $userId, $content, $modelKey]);
+
+    // Output headers
+    @ini_set('zlib.output_compression', '0');
+    @ini_set('output_buffering', '0');
+    @ini_set('implicit_flush', '1');
+    header('Content-Type: application/x-ndjson');
+    header('Cache-Control: no-cache');
+    header('X-Accel-Buffering: no');
+
+    $fullText = '';
+    $streamResult = callAIStream($modelSettings, $history, $content, function($chunk) use (&$fullText) {
+        $fullText .= $chunk;
+        echo json_encode(['type'=>'chunk','text'=>$chunk])."\n";
+        if (ob_get_level()) ob_flush();
+        flush();
+    });
+
+    if (!$streamResult['success']) {
+        echo json_encode(['type'=>'error','message'=>'Error AI: '.$streamResult['message']])."\n";
+        exit;
+    }
+
+    $tokensUsed = $streamResult['tokens'] ?? 0;
+
+    // Save AI response
+    $insertStmt2 = $db->prepare("INSERT INTO chat_messages (session_id, user_id, role, content, model_key, tokens_used) VALUES (?, ?, 'assistant', ?, ?, ?)");
+    $insertStmt2->execute([$sessionId, $userId, $fullText, $modelKey, $tokensUsed]);
+
+    $db->prepare("UPDATE users SET messages_used = messages_used + 1 WHERE id = ?")->execute([$userId]);
+
+    if ($session['title'] === 'Chat Baru') {
+        $autoTitle = mb_substr($content, 0, 40) . (mb_strlen($content) > 40 ? '...' : '');
+        $db->prepare("UPDATE chat_sessions SET title = ?, model_key = ?, updated_at = NOW() WHERE id = ?")->execute([$autoTitle, $modelKey, $sessionId]);
+    } else {
+        $db->prepare("UPDATE chat_sessions SET updated_at = NOW() WHERE id = ?")->execute([$sessionId]);
+    }
+
+    echo json_encode([
+        'type' => 'done',
+        'text' => $fullText,
+        'tokens' => $tokensUsed,
+        'used' => $user['messages_used'] + 1,
+        'limit' => $user['message_limit']
+    ])."\n";
+    if (ob_get_level()) ob_flush();
+    flush();
+}
+
+function callAIStream($settings, $history, $userMessage, $callback) {
+    $modelKey  = $settings['model_key'];
+    $apiKey    = $settings['api_key'];
+    $endpoint  = $settings['api_endpoint'];
+    $sysPrompt = $settings['system_prompt'];
+    $maxTokens = (int)$settings['max_tokens'];
+    $temp      = (float)$settings['temperature'];
+
+    $messages = [];
+    foreach ($history as $msg) {
+        $messages[] = ['role' => $msg['role'], 'content' => $msg['content']];
+    }
+    $messages[] = ['role' => 'user', 'content' => $userMessage];
+
+    // ---- LLAMA / OpenAI-compatible ----
+    if (strpos($modelKey, 'llama') !== false || strpos($modelKey, 'gpt') !== false || strpos($modelKey, 'deepseek') !== false) {
+        $msgs = [['role' => 'system', 'content' => $sysPrompt], ...$messages];
+        $body = json_encode([
+            'model'       => $modelKey === 'llama-3.1-8b-instant' ? 'llama-3.1-8b-instant' : $modelKey,
+            'messages'    => $msgs,
+            'max_tokens'  => $maxTokens,
+            'temperature' => $temp,
+            'stream'      => true
+        ]);
+        $headers = [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $apiKey
+        ];
+        return streamCurl($endpoint, $body, $headers, $callback);
+    }
+
+    // ---- GEMINI ----
+    if (strpos($modelKey, 'gemini') !== false) {
+        $geminiMsgs = [];
+        foreach ($messages as $msg) {
+            $geminiMsgs[] = [
+                'role'  => $msg['role'] === 'assistant' ? 'model' : 'user',
+                'parts' => [['text' => $msg['content']]]
+            ];
+        }
+        $body = json_encode([
+            'contents'          => $geminiMsgs,
+            'systemInstruction' => ['parts' => [['text' => $sysPrompt]]],
+            'generationConfig'  => ['maxOutputTokens' => $maxTokens, 'temperature' => $temp]
+        ]);
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/{$modelKey}:streamGenerateContent?alt=sse&key={$apiKey}";
+        $headers = ['Content-Type: application/json'];
+        return streamCurl($url, $body, $headers, $callback, 'gemini');
+    }
+
+    return ['success' => false, 'message' => 'Model tidak dikenali.'];
+}
+
+function streamCurl($url, $body, $headers, $callback, $provider = 'openai') {
+    $buffer = '';
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => false,
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => $body,
+        CURLOPT_HTTPHEADER     => $headers,
+        CURLOPT_TIMEOUT        => 60,
+        CURLOPT_SSL_VERIFYPEER => false,
+        CURLOPT_WRITEFUNCTION  => function($ch, $data) use ($callback, $provider, &$buffer) {
+            $buffer .= $data;
+            $lines = explode("\n", $buffer);
+            $buffer = array_pop($lines); // keep incomplete line
+            foreach ($lines as $line) {
+                $line = trim($line);
+                if (empty($line)) continue;
+                if (!str_starts_with($line, 'data: ')) continue;
+                $json = substr($line, 6);
+                if ($json === '[DONE]') return strlen($data);
+                $parsed = json_decode($json, true);
+                if (!$parsed) continue;
+                $text = null;
+                if ($provider === 'gemini') {
+                    $text = $parsed['candidates'][0]['content']['parts'][0]['text'] ?? null;
+                } else {
+                    $text = $parsed['choices'][0]['delta']['content'] ?? null;
+                }
+                if ($text !== null && $text !== '') {
+                    $callback($text);
+                }
+            }
+            return strlen($data);
+        }
+    ]);
+    curl_exec($ch);
+    $error = curl_error($ch);
+    curl_close($ch);
+    if ($error) return ['success' => false, 'message' => 'cURL Error: ' . $error];
+
+    // Approximate token count from buffer length
+    $tokens = (int)(strlen($buffer) / 4);
+    return ['success' => true, 'tokens' => $tokens];
+}
 function curlPost($url, $body, $headers) {
     $ch = curl_init($url);
     curl_setopt_array($ch, [

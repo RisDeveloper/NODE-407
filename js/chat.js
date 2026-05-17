@@ -214,31 +214,63 @@ async function sendMessage() {
   document.getElementById('chat-empty').style.display = 'none';
 
   appendMessage('user', content);
-  showTypingIndicator();
+  const typingEl = showTypingIndicator();
 
-  const res = await apiCall('chat.php', {
-    action: 'send_message',
-    session_id: currentSession.id,
-    content,
-    model: currentModel
-  });
+  // Streaming fetch
+  const fd = new FormData();
+  fd.append('action', 'send_message_stream');
+  fd.append('session_id', currentSession.id);
+  fd.append('content', content);
+  fd.append('model', currentModel);
 
-  hideTypingIndicator();
-  isLoading = false;
-  document.getElementById('send-btn').disabled = false;
+  try {
+    const response = await fetch('php/chat.php', { method: 'POST', body: fd });
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    if (!response.body) throw new Error('Streaming tidak didukung browser.');
 
-  if (!res.success) {
-    showToast(res.message, 'error');
-    return;
+    hideTypingIndicator();
+    const msgEl = appendMessage('assistant', '', null, false);
+    const contentDiv = msgEl.querySelector('.message-content');
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let fullText = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+      for (const line of lines) {
+        if (!line) continue;
+        try {
+          const data = JSON.parse(line);
+          if (data.type === 'chunk') {
+            fullText += data.text;
+            contentDiv.innerHTML = renderMarkdown(fullText) + '<span class="stream-cursor">|</span>';
+            scrollToBottom();
+          } else if (data.type === 'done') {
+            contentDiv.innerHTML = renderMarkdown(fullText);
+            currentUser.messages_used = data.used;
+            currentUser.message_limit = data.limit;
+            updateUsageBar();
+            await loadSessions();
+          } else if (data.type === 'error') {
+            contentDiv.innerHTML = `<p class="text-error">Error: ${data.message}</p>`;
+            showToast(data.message, 'error');
+          }
+        } catch (e) { /* skip parse errors */ }
+      }
+    }
+  } catch (err) {
+    hideTypingIndicator();
+    showToast('Gagal terhubung ke server: ' + err.message, 'error');
   }
 
-  appendMessage('assistant', res.message);
-  currentUser.messages_used = res.used;
-  currentUser.message_limit = res.limit;
-  updateUsageBar();
-
-  // Refresh sessions untuk update title
-  await loadSessions();
+  isLoading = false;
+  document.getElementById('send-btn').disabled = false;
   scrollToBottom();
 }
 
@@ -275,6 +307,7 @@ function appendMessage(role, content, timestamp = null, doScroll = true) {
   `;
   container.appendChild(el);
   if (doScroll) scrollToBottom();
+  return el;
 }
 
 // ============================================
