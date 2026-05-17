@@ -273,7 +273,7 @@ function handleGoogleLogin() {
 function handleGoogleCallback() {
     $code = $_GET['code'] ?? '';
     if (empty($code)) {
-        header('Location: ' . APP_URL . '/index.html?error=google_auth_failed');
+        header('Location: ' . APP_URL . '/login.html?error=google_auth_failed');
         exit;
     }
 
@@ -288,7 +288,7 @@ function handleGoogleCallback() {
     $clientSecret = $clientSecretStmt->fetchColumn();
 
     if (empty($clientId) || empty($clientSecret)) {
-        header('Location: ' . APP_URL . '/index.html?error=google_not_configured');
+        header('Location: ' . APP_URL . '/login.html?error=google_not_configured');
         exit;
     }
 
@@ -317,7 +317,7 @@ function handleGoogleCallback() {
     curl_close($ch);
 
     if ($httpCode !== 200) {
-        header('Location: ' . APP_URL . '/index.html?error=google_token_failed');
+        header('Location: ' . APP_URL . '/login.html?error=google_token_failed');
         exit;
     }
 
@@ -336,7 +336,7 @@ function handleGoogleCallback() {
     curl_close($ch);
 
     if ($httpCode !== 200) {
-        header('Location: ' . APP_URL . '/index.html?error=google_userinfo_failed');
+        header('Location: ' . APP_URL . '/login.html?error=google_userinfo_failed');
         exit;
     }
 
@@ -347,7 +347,7 @@ function handleGoogleCallback() {
     $avatar = $googleUser['picture'] ?? '';
 
     if (empty($email)) {
-        header('Location: ' . APP_URL . '/index.html?error=google_no_email');
+        header('Location: ' . APP_URL . '/login.html?error=google_no_email');
         exit;
     }
 

@@ -186,7 +186,7 @@ async function checkSession(redirectIfLoggedIn = false, requireAdmin = false) {
     return res.user;
   }
   if (!res.logged_in) {
-    window.location.href = 'index.html';
+      window.location.href = 'login.html';
     return null;
   }
   if (requireAdmin && res.user.role !== 'admin') {

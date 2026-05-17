@@ -79,10 +79,10 @@ function isAdmin() {
 function requireLogin() {
     if (!isLoggedIn()) {
         if (isAjax()) {
-            echo json_encode(['success' => false, 'message' => 'Sesi habis, silakan login ulang.', 'redirect' => 'index.html']);
+            echo json_encode(['success' => false, 'message' => 'Sesi habis, silakan login ulang.', 'redirect' => 'login.html']);
             exit;
         }
-        header('Location: ' . APP_URL . '/index.html');
+        header('Location: ' . APP_URL . '/login.html');
         exit;
     }
 }
